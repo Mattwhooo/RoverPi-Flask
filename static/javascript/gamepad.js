@@ -2,6 +2,15 @@ var haveEvents = 'ongamepadconnected' in window;
 var controllers = {};
 var socket = io();
 
+socket.on('newUser', function(data){
+    $.bootstrapGrowl(data + " has joined.", { ele: "body", type: "info", delay: 6000, allow_dismiss: true });
+});
+
+socket.on('whoAreYou', function(data){
+    var person = window.prompt('Who are you?', '');
+    socket.emit('newUserSignIn', person);
+});
+
 function connecthandler(e) {
     addgamepad(e.gamepad);
     showOverlay();
