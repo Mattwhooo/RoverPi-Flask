@@ -1,3 +1,5 @@
 eventlet
 flask
 flask-socketio
+pyjade
+smbus-cffi

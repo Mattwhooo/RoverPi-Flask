@@ -9,24 +9,27 @@ import time
 # ===========================================================================
 
 # Initialise the PWM device using the default address
-pwm = PWM(0x60)
+pwm = PWM(0x40)
 # Note if you'd like more debug output you can instead run:
 #pwm = PWM(0x40, debug=True)
+
+pwm.setPWMFreq(60)                        # Set frequency to 60 Hz
 
 servoMin = 150  # Min pulse length out of 4096
 servoMax = 600  # Max pulse length out of 4096
 
 def setServoPulse(channel, pulse):
-  pulse = (pulse + 1) / 2 #normalize pulse for 0..1 range
-  pulse = (servoMax - servoMin) * pulse  + servoMin #set pulse in range of min..max
+  print ('setServoPulse:',channel,":",pulse)
+  pulse = float(pulse) + 1.0
+  pulse *= (servoMax - servoMin)
+  pulse += servoMin
+  pulse = int(pulse)
   pulseLength = 1000000                   # 1,000,000 us per second
   pulseLength /= 60                       # 60 Hz
   pulseLength /= 4096                     # 12 bits of resolution
   pulse *= 1000
   pulse /= pulseLength
-  pwm.setPWM(channel, 0, pulse)
-
-pwm.setPWMFreq(60)                        # Set frequency to 60 Hz
+  pwm.setPWM(int(channel), 0, int(pulse))
 
 mh = Adafruit_MotorHAT(addr=0x61)
 
@@ -41,7 +44,7 @@ atexit.register(turnOffMotors)
 
 
 def setMotorSpeed(motor, speed):
-
+  speed = float(speed)
   if speed < 0:
     direction = Adafruit_MotorHAT.BACKWARD
   else:
@@ -49,9 +52,9 @@ def setMotorSpeed(motor, speed):
 
   speed *= 255
   speed = abs(speed)
-
-  myMotor = mh.getMotor(motor)
+  motor = int(motor)
+  myMotor = mh.getMotor(motor+1)
 
   myMotor.run(direction)
-  myMotor.setSpeed(speed)
+  #myMotor.setSpeed(speed)
   myMotor.run(Adafruit_MotorHAT.RELEASE);
