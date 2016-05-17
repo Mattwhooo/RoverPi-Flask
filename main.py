@@ -44,6 +44,12 @@ def hello_world():
 def ws_conn():
     print('hello connect')
 
+
+@io.on('gyroUpdate')
+def update_gyro(data):
+   print(data)
+
+
 @io.on('gamepadUpdate')
 def update_gamepad(data):
    print(data)
