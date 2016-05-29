@@ -1,19 +1,30 @@
 var haveEvents = 'ongamepadconnected' in window;
 var controllers = {};
-var socket = io();
+var socket = io.connect('http://' + document.domain + ':' + location.port + '/rover');
+
 
 socket.on('newUser', function(data){
     $.bootstrapGrowl(data + " has joined.", { ele: "body", type: "info", delay: 6000, allow_dismiss: true });
 });
+socket.on('newController', function(data){
+    $.bootstrapGrowl(data + " has connected a controller.", { ele: "body", type: "info", delay: 6000, allow_dismiss: true });
+});
+socket.on('removeUser', function(data){
+    $.bootstrapGrowl(data + " has left.", { ele: "body", type: "info", delay: 6000, allow_dismiss: true });
+});
+socket.on('removeController', function(data){
+    $.bootstrapGrowl(data + " has removed a controller.", { ele: "body", type: "info", delay: 6000, allow_dismiss: true });
+});
 
-socket.on('whoAreYou', function(data){
+socket.on('who am i', function(data){
     var person = window.prompt('Who are you?', '');
-    socket.emit('newUserSignIn', person);
+    socket.emit('broadcast user', person);
+
 });
 
 function connecthandler(e) {
     addgamepad(e.gamepad);
-    showOverlay();
+    //showOverlay();
 }
 
 function showOverlay(){
@@ -47,12 +58,14 @@ function addgamepad(gamepad) {
         document.getElementById('axes').appendChild(s);
     }
 
+    socket.emit('broadcast controller');
     requestAnimationFrame(updateStatus);
 }
 
 function disconnecthandler(e) {
     removegamepad(e.gamepad);
-    showOverlay();
+    socket.emit('broadcast remove controller');
+    //showOverlay();
 }
 
 function removegamepad(gamepad) {
@@ -101,7 +114,7 @@ function scangamepads() {
         if (gamepads[i]) {
             if (gamepads[i].index in controllers) {
                 controllers[gamepads[i].index] = gamepads[i];
-                showOverlay();
+                //showOverlay();
             } else {
                 addgamepad(gamepads[i]);
             }
@@ -116,4 +129,4 @@ window.addEventListener("gamepaddisconnected", disconnecthandler);
 if (!haveEvents) {
     setInterval(scangamepads, 500);
 }
-showOverlay();
+//showOverlay();

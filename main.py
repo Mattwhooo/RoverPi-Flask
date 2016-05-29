@@ -1,19 +1,40 @@
-from flask import Flask, render_template
-from flask.ext.socketio import SocketIO, emit
+from flask import Flask, render_template, session, request
+from flask_socketio import SocketIO, emit, send
 from pi import setServoPulse, setMotorSpeed
 
+users = {}
 app = Flask(__name__)
 io = SocketIO(app)
 
 @app.route('/')
 def hello_world():
+    # io.emit('newUser', 'Test User?')
     return render_template('index.jade', title = 'Rover-Pi')
 
-@io.on('connect')
-def ws_conn():
-    print('hello connect')
+@io.on('broadcast user', namespace='/rover')
+def test_message(message):
+    users[request.sid] = message
+    emit('newUser', message, broadcast=True)
 
-@io.on('gamepadUpdate')
+@io.on('broadcast remove controller', namespace='/rover')
+def test_message():
+    emit('removeController', users[request.sid], broadcast=True)
+
+@io.on('broadcast controller', namespace='/rover')
+def test_message():
+    emit('newController', users[request.sid], broadcast=True)
+
+@io.on('connect', namespace='/rover')
+def test_connect():
+    print('client connected')
+    emit('who am i', {'data': 'Connected'})
+
+@io.on('disconnect', namespace='/rover')
+def test_disconnect():
+    print('Client disconnected')
+    emit('removeUser', users[request.sid], broadcast=True)
+
+@io.on('gamepadUpdate', namespace='/rover')
 def update_gamepad(data):
    print(data)
    axis = data.split(';')
