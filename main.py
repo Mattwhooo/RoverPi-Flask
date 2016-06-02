@@ -1,6 +1,11 @@
+import os
+
+raspberry_pi = os.uname()[4][:3] == 'arm'
+
 from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, emit, send
-from pi import setServoPulse, setMotorSpeed
+if raspberry_pi:
+    from pi import setServoPulse, setMotorSpeed
 
 users = {}
 app = Flask(__name__)
@@ -42,11 +47,13 @@ def update_gamepad(data):
        if a != '':
            axis_data = a.split('=')
            if axis_data[0] == '2' or axis_data[0] == '3':
-             setServoPulse(int(axis_data[0]), float(axis_data[1]))
+             if raspberry_pi:
+                setServoPulse(int(axis_data[0]), float(axis_data[1]))
            else:
-             setMotorSpeed(int(axis_data[0]), float(axis_data[1]))
+             if raspberry_pi:
+                setMotorSpeed(int(axis_data[0]), float(axis_data[1]))
 
 if __name__ == '__main__':
     app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
 
-    io.run(app)
+    io.run(app, host='0.0.0.0')
