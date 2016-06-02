@@ -10,12 +10,12 @@ if raspberry_pi:
 users = {}
 app = Flask(__name__)
 io = SocketIO(app)
+
 app.horizontal_offset = 0
 app.vertical_offset = 0
 
 @app.route('/')
 def hello_world():
-    # io.emit('newUser', 'Test User?')
     return render_template('index.jade', title = 'Rover-Pi')
 
 @io.on('broadcast user', namespace='/rover')
@@ -59,11 +59,11 @@ def update_gamepad(data):
        if a != '':
            axis_data = a.split('=')
            if axis_data[0] == '2' or axis_data[0] == '3':
-             if raspberry_pi:
-                setServoPulse(int(axis_data[0]), float(axis_data[1]))
+                if raspberry_pi:
+                    setServoPulse(int(axis_data[0]), float(axis_data[1]))
            else:
-             if raspberry_pi:
-                setMotorSpeed(int(axis_data[0]), float(axis_data[1]))
+                if raspberry_pi:
+                    setMotorSpeed(int(axis_data[0]), float(axis_data[1]))
 
 if __name__ == '__main__':
     app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')

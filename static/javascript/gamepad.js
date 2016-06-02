@@ -90,14 +90,12 @@ function updateStatus() {
         if (new Date().getTime() - last > 125){
 
             if (controller.axes[4] != 0) {
-                console.log('horizontal offset')
                 var lastHorizontal = new Date().getTime();
                 socket.emit('horizontal offset', controller.axes[4])
             }
 
             if (controller.axes[5] != 0) {
                 var lastVertical = new Date().getTime();
-                console.log('vertical offset')
                 socket.emit('vertical offset', controller.axes[5])
             }
             last = new Date().getTime();
