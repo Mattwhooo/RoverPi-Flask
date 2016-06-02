@@ -3,3 +3,4 @@ flask
 flask-socketio
 pyjade
 smbus-cffi
+pyjade

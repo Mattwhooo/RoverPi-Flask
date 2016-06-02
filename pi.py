@@ -31,14 +31,15 @@ def setServoPulse(channel, pulse):
   pulse /= pulseLength
   pwm.setPWM(int(channel), 0, int(pulse))
 
-mh = Adafruit_MotorHAT(addr=0x61)
+# mh = Adafruit_MotorHAT(addr=0x61)
 
 # recommended for auto-disabling motors on shutdown!
 def turnOffMotors():
-	mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
-	mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
-	mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
-	mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
+  pass
+	# mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
+	# mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
+	# mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
+	# mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
 
 atexit.register(turnOffMotors)
 
