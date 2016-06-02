@@ -1,8 +1,13 @@
+import os
+
+raspberry_pi = os.uname()[4][:3] == 'arm'
+
 from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, emit, send
-from pi import setServoPulse, setMotorSpeed
-from adafruit.Adafruit_Servo_Driver import PWM
-#from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
+
+if raspberry_pi:
+    from pi import setServoPulse, setMotorSpeed
+
 
 '''
   Servo thinking
@@ -54,15 +59,14 @@ cAlpha = 0
 cHeading = 0
 cAccuracy = 0
 
-
 # Initialise the PWM device using the default address
-pwm = PWM(0x40)
-# Note if you'd like more debug output you can instead run:
-#pwm = PWM(0x40, debug=True)
-
 freq = 60
-#pwm.setPWMFreq(60)                        # Set frequency to 60 Hz
-pwm.setPWMFreq(freq)
+if raspberry_pi:
+    pwm = PWM(0x40)
+    # Note if you'd like more debug output you can instead run:
+    #pwm = PWM(0x40, debug=True)
+    #pwm.setPWMFreq(60)                        # Set frequency to 60 Hz
+    pwm.setPWMFreq(freq)
 
 
 def renormalize(n, range1, range2):
@@ -113,12 +117,12 @@ def scale_heading(cHeading):
 
     return value
 
-
+app.horizontal_offset = 125
+app.vertical_offset = 125
 
 
 @app.route('/')
 def hello_world():
-    # io.emit('newUser', 'Test User?')
     return render_template('index.jade', title = 'Rover-Pi')
 
 @io.on('broadcast user', namespace='/rover')
@@ -145,6 +149,23 @@ def test_disconnect():
     print('Client disconnected')
     emit('removeUser', users[request.sid], broadcast=True)
 
+@io.on('vertical offset', namespace='/rover')
+def increase_vertical(amount):
+    app.vertical_offset += amount * 5
+    if app.vertical_offset > 255:
+        app.vertical_offset = 255
+    if app.vertical_offset < 0:
+        app.vertical_offset = 0
+    print(app.vertical_offset)
+
+@io.on('horizontal offset', namespace='/rover')
+def increase_horizontal(amount):
+    app.horizontal_offset += amount * 5
+    if app.horizontal_offset > 255:
+        app.horizontal_offset = 255
+    if app.horizontal_offset < 0:
+        app.horizontal_offset = 0
+    print(app.horizontal_offset)
 
 @io.on('gamepadUpdate', namespace='/rover')
 def update_gamepad(data):
@@ -159,27 +180,28 @@ def update_gamepad(data):
   # -1.8 for toy
 
    #joystick 1
-   x0 = scale_input(float(axis[0].split('=')[1]), x_offset)
+   x0 = scale_input(float(axis[0].split('=')[1]), app.horizontal_offset)
    # flip y axis
-   y0 = scale_input(-1 * float(axis[1].split('=')[1]), y_offset)
+   y0 = scale_input(-1 * float(axis[1].split('=')[1]), app.vertical_offset)
 
    #joystick 2
-   x1 = scale_input(float(axis[2].split('=')[1]), x_offset)
+   x1 = scale_input(float(axis[2].split('=')[1]),app.horizontal_offset)
    #flip y axis
-   y1 = scale_input(-1.0 * float(axis[3].split('=')[1]), y_offset)
+   y1 = scale_input(-1.0 * float(axis[3].split('=')[1]),app.vertical_offset)
 
    print ('x0:',x1,' y0:',y0,' x1:',x1,' y1:',y1)
 
    #pwm.setPWM(0, 0, y1)
 
    #pan and tilt 1
-   pwm.setPWM(0, 0, y0)
-   pwm.setPWM(1, 0, x0)
+   if raspberry_pi:
+       pwm.setPWM(0, 0, y0)
+       pwm.setPWM(1, 0, x0)
 
 
-   #pan and tilt 2
-   pwm.setPWM(2, 0, x1)
-   pwm.setPWM(3, 0, y1)
+       #pan and tilt 2
+       pwm.setPWM(2, 0, x1)
+       pwm.setPWM(3, 0, y1)
 
 @io.on('compassUpdate')
 def update_compass(data):
@@ -211,5 +233,4 @@ def update_gyro(data):
 
 if __name__ == '__main__':
     app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
-
     io.run(app, host='0.0.0.0')
