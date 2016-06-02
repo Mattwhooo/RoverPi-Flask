@@ -74,6 +74,9 @@ function removegamepad(gamepad) {
     delete controllers[gamepad.index];
 }
 var oldMessage = ''
+
+var last = new Date().getTime();
+
 function updateStatus() {
     if (!haveEvents) {
         scangamepads();
@@ -84,6 +87,23 @@ function updateStatus() {
 
     for (j in controllers) {
         var controller = controllers[j];
+        if (new Date().getTime() - last > 125){
+
+            if (controller.axes[4] != 0) {
+                console.log('horizontal offset')
+                var lastHorizontal = new Date().getTime();
+                socket.emit('horizontal offset', controller.axes[4])
+            }
+
+            if (controller.axes[5] != 0) {
+                var lastVertical = new Date().getTime();
+                console.log('vertical offset')
+                socket.emit('vertical offset', controller.axes[5])
+            }
+            last = new Date().getTime();
+        }
+
+
         var d = document.getElementById("controller");
         var message = '';
         var axes = d.getElementsByClassName("axis");

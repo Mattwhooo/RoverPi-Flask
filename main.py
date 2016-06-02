@@ -10,6 +10,8 @@ if raspberry_pi:
 users = {}
 app = Flask(__name__)
 io = SocketIO(app)
+app.horizontal_offset = 0
+app.vertical_offset = 0
 
 @app.route('/')
 def hello_world():
@@ -38,6 +40,16 @@ def test_connect():
 def test_disconnect():
     print('Client disconnected')
     emit('removeUser', users[request.sid], broadcast=True)
+
+@io.on('vertical offset', namespace='/rover')
+def increase_vertical(amount):
+    app.vertical_offset += amount
+    print(app.vertical_offset)
+
+@io.on('horizontal offset', namespace='/rover')
+def increase_vertical(amount):
+    app.horizontal_offset += amount
+    print(app.horizontal_offset)
 
 @io.on('gamepadUpdate', namespace='/rover')
 def update_gamepad(data):
