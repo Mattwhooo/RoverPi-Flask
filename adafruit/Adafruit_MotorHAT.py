@@ -215,7 +215,6 @@ class Adafruit_DCMotor:
             speed = 255
         self.MC._pwm.setPWM(self.PWMpin, 0, speed * 16)
 
-
 class Adafruit_MotorHAT:
     FORWARD = 1
     BACKWARD = 2

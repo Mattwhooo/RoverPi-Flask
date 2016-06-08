@@ -33,8 +33,6 @@ if raspberry_pi:
 	no max or min pulse width..
 	the direction isn't standarized either.
 	typical pulse period is about 50hz, but it doesn't change position
-	it's still the pulse width..
-	it does give the upper limit of how quick you can send servo commands
 
 
 	setPWM ( channel, start(out of 4095), end (out of 4095)
@@ -63,9 +61,9 @@ ra = 0
 rb = 0
 rg = 0
 
-# compass data
+#compass data
 cGamma = 0
-cBeta = 0
+cBeta  = 0
 cAlpha = 0
 cHeading = 0
 cAccuracy = 0
@@ -172,11 +170,11 @@ if TEST:
 
 # Scale value N,  from one range to new range.
 # eg. from  -1 to 1   --> -255 to 255
+
 def renormalize(n, range1, range2):
     delta1 = range1[1] - range1[0]
     delta2 = range2[1] - range2[0]
     return (delta2 * (n - range1[0]) / delta1) + range2[0]
-
 
 # set speed (and direction) of left motors
 def set_left_speed(speed):
@@ -248,11 +246,9 @@ def scale_heading(cHeading):
 
     return value
 
-
 @app.route('/')
 def hello_world():
-    return render_template('index.jade', title='Rover-Pi')
-
+    return render_template('index.jade', title = 'Rover-Pi')
 
 @io.on('broadcast user', namespace='/rover')
 def test_message(message):
@@ -264,17 +260,14 @@ def test_message(message):
 def test_message():
     emit('removeController', users[request.sid], broadcast=True)
 
-
 @io.on('broadcast controller', namespace='/rover')
 def test_message():
     emit('newController', users[request.sid], broadcast=True)
-
 
 @io.on('connect', namespace='/rover')
 def test_connect():
     print('client connected')
     emit('who am i', {'data': 'Connected'})
-
 
 @io.on('disconnect', namespace='/rover')
 def test_disconnect():
@@ -407,31 +400,29 @@ def update_gamepad(data):
 def update_compass(data):
     cdata = data.split(';')
     cGamma = cdata[0].split('=')[1]
-    cBeta = cdata[1].split('=')[1]
+    cBeta  = cdata[1].split('=')[1]
     cAlpha = cdata[2].split('=')[1]
     cHeading = cdata[3].split('=')[1]
     cAccuracy = cdata[4].split('=')[1]
 
-    # print ('compass:',cGamma, cBeta, cAlpha, cHeading, cAccuracy)
-    print('Heading:', cHeading)
+    #print ('compass:',cGamma, cBeta, cAlpha, cHeading, cAccuracy)
+    print ('Heading:',cHeading)
 
     y2 = scale_heading(cHeading)
-   # pwm.setPWM(4, 0, y2)
-
+    pwm.setPWM(4,0,y2)
 
 @io.on('gyroUpdate')
 def update_gyro(data):
-    # print("gyrodata:", data)
-    axis = data.split(';')
-    # split into pairs, grab out the data from the pair
-    ax = axis[0].split('=')[1]
-    ay = axis[1].split('=')[1]
-    az = axis[2].split('=')[1]
-    ra = axis[3].split('=')[1]
-    rb = axis[4].split('=')[1]
-    rg = axis[5].split('=')[1]
-    # print ('orientation:',ax,ay,az,ra,rb,rg)
-
+   #print("gyrodata:", data)
+   axis = data.split(';')
+   #split into pairs, grab out the data from the pair
+   ax = axis[0].split('=')[1]
+   ay = axis[1].split('=')[1]
+   az = axis[2].split('=')[1]
+   ra = axis[3].split('=')[1]
+   rb = axis[4].split('=')[1]
+   rg = axis[5].split('=')[1]
+   #print ('orientation:',ax,ay,az,ra,rb,rg)
 
 if __name__ == '__main__':
     app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
