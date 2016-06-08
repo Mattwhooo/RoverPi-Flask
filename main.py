@@ -42,6 +42,8 @@ if raspberry_pi:
 '''
 users = {}
 app = Flask(__name__)
+app.horizontal_offset = 125
+app.vertical_offset = 125
 io = SocketIO(app)
 
 #init x,y,z acceleration -
@@ -116,10 +118,6 @@ def scale_heading(cHeading):
     value = min(value, int(632 * freq / 60))  # at 150Hz- 1580 pulse width seems max
 
     return value
-
-app.horizontal_offset = 125
-app.vertical_offset = 125
-
 
 @app.route('/')
 def hello_world():

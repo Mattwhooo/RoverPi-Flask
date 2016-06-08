@@ -87,7 +87,7 @@ function updateStatus() {
 
     for (j in controllers) {
         var controller = controllers[j];
-        if (new Date().getTime() - last > 125){
+        if (new Date().getTime() - last > 250){
 
             if (controller.axes[4] != 0) {
                 var lastHorizontal = new Date().getTime();
