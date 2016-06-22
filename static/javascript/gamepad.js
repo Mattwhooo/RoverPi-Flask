@@ -114,7 +114,6 @@ function updateStatus() {
             }else{
                 message += i.toString() + '=0;';
             }
-
         }
         if(oldMessage != message){
             socket.emit('gamepadUpdate', message);

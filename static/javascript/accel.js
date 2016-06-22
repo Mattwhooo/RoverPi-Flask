@@ -4,8 +4,8 @@ var x = 0, y = 0,
 	
 var sphere = document.getElementById("sphere");
 
-
-window.alert("stuff going")
+#debug - sanity check
+#window.alert("stuff going")
 
 if (window.DeviceOrientationEvent) {
         //window.alert("Device Orientation Event!");

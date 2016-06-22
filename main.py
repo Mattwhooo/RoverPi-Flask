@@ -48,8 +48,8 @@ if raspberry_pi:
 users = {}
 app = Flask(__name__)
 
-app.horizontal_offset = 125
-app.vertical_offset = 125
+app.horizontal_offset = -50
+app.vertical_offset = -80
 
 io = SocketIO(app)
 
@@ -89,10 +89,10 @@ def turnOffMotors():
     mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
 
 #Motors!
-m1 = mh.getMotor(1)
-m2 = mh.getMotor(2)
-m3 = mh.getMotor(3)
-m4 = mh.getMotor(4)
+m1 = mh.getMotor(3)
+m2 = mh.getMotor(4)
+m3 = mh.getMotor(1)
+m4 = mh.getMotor(2)
 
 #Turn off motors on exit
 atexit.register(turnOffMotors)
@@ -209,21 +209,27 @@ def ws_conn():
 
 # take the joystick input and scale it to a pulse width out of 4096
 def scale_input(joy_input, c_offset=0):
+
+    # -1.8 for toy
     # c_offset param in the 0 - 1 range.. and can be negative
     #debug offset
     #print("--------------------------------", c_offset)
     # offset the range(-0.5 to 0.5), mult by servorange add min
-    joy_input += 0.5
-    # 450 - scaling from  0 - 1, to something out of 4096
-    # the usable range for our servo is a pulse between 200 and 632
-    scaled = joy_input * 450 * freq / 60  # account for frequency
-    center_offset = freq * c_offset
-    value = int(scaled + (150 * freq / 60) + center_offset)
+    # joy_input += 0.5
+    # # 450 - scaling from  0 - 1, to something out of 4096
+    # # the usable range for our servo is a pulse between 200 and 632
+    # scaled = joy_input * 450 * freq / 60  # account for frequency
+    # center_offset = freq * c_offset
+    # value = int(scaled + (150 * freq / 60) + center_offset)
+
+    value = int( renormalize(joy_input,(-1,1), (170,700)))
+    value = int (value + c_offset )
+    print (' ----------------------------------------------------', value)
 
     # limit min and max for servo position.
     # discovered these experimentally -
-    value = max(value, int(200 * freq / 60))  # at 150Hz- 500 pulse width seems min
-    value = min(value, int(632 * freq / 60))  # at 150Hz- 1580 pulse width seems max
+    value = max(value, int(170 * freq / 60))  # at 150Hz- 500 pulse width seems min
+    value = min(value, int(700 * freq / 60))  # at 150Hz- 1580 pulse width seems max
 
     return value
 
@@ -279,11 +285,12 @@ def test_disconnect():
 def increase_vertical(amount):
     if amount:
         app.vertical_offset += amount * 5
-        if app.vertical_offset > 255:
-            app.vertical_offset = 255
-        if app.vertical_offset < 0:
-            app.vertical_offset = 0
+        if app.vertical_offset > 200:
+            app.vertical_offset = 200
+        if app.vertical_offset < -200:
+            app.vertical_offset = -200
         print(app.vertical_offset)
+    update_gamepad(app.last_data)
 
 
 @io.on('horizontal offset', namespace='/rover')
@@ -291,37 +298,36 @@ def increase_horizontal(amount):
     if amount:
         print('amount:', amount)
         app.horizontal_offset += float(amount) * 5
-        if app.horizontal_offset > 255:
-            app.horizontal_offset = 255
-        if app.horizontal_offset < 0:
-            app.horizontal_offset = 0
+        if app.horizontal_offset > 200:
+            app.horizontal_offset = 200;
+        if app.horizontal_offset < -200:
+            app.horizontal_offset = -200
         print(app.horizontal_offset)
+    update_gamepad(app.last_data)
 
-
+app.last_data = ''
 @io.on('gamepadUpdate', namespace='/rover')
 def update_gamepad(data):
+    app.last_data = data
     # recommended for auto-disabling motors on shutdown!
     print('JOYSTICK DATA:', data)  # gamepad data "x1=n;y1=n;x2=n;y2=n;x3=n;..."
     axis = data.split(';')
+    print('Split data:', axis)
 
-    # no x offset
-    x_offset = 0
-    # tilt y axis up just a tad
-    y_offset = 0
-    # -1.8 for toy
 
-    #bkd - horizontal offset
-    app.horizontal_offset = 0
-    app.vertical_offset = -0.1
-    # joystick 1
-    x0 = scale_input(float(axis[0].split('=')[1]), app.horizontal_offset)
-    # flip y axis
-    y0 = scale_input(-1 * float(axis[1].split('=')[1]), app.vertical_offset)
+    #bkd - horizontal offset (in the -50 to 50 range
+    # app.horizontal_offset = -50
+    app.vertical_calibration = -20
+
+    #BKD -debug
+    app.horizontal_offset = -70
 
     # joystick 1
-    x0 = scale_input(float(axis[0].split('=')[1]), app.horizontal_offset)
+    x0 = scale_input( -1 * float(axis[2].split('=')[1]), app.horizontal_offset)
     # flip y axis
-    y0 = scale_input(-1 * float(axis[1].split('=')[1]), app.vertical_offset)
+    y0 = scale_input( float(axis[3].split('=')[1]), app.vertical_offset+app.vertical_calibration)
+    print(y0)
+    y0 = max(185,min(565, y0))
 
     # #joystick 2
     # x1 = scale_input(float(axis[2].split('=')[1]),app.horizontal_offset)
@@ -335,15 +341,11 @@ def update_gamepad(data):
     #think we're at low voltage for motors..
     # lower speed values don't actually  move motors, so scale everything up
     # don't know what happens when we're out of range, but we can fix that
-    motor_output_range = (-400,400)
+    motor_output_range = (-255,255)
 
     # joystick 2 ---- Driving !
-    x1_output = float(axis[2].split('=')[1])
-    y1_output = -1 * float(axis[3].split('=')[1])
-
-
-    x1 = renormalize(float(axis[2].split('=')[1]), motor_input_range, motor_output_range)
-    y1 = renormalize(-1 * float(axis[3].split('=')[1]), motor_input_range, motor_output_range)
+    x1 = renormalize(float(axis[0].split('=')[1]), motor_input_range, motor_output_range)
+    y1 = renormalize(-1 * float(axis[1].split('=')[1]), motor_input_range, motor_output_range)
 
     x1 = int(x1)
     y1 = int(y1)
@@ -358,7 +360,7 @@ def update_gamepad(data):
     #  the last multiplier is to lessen the effect of the x axis
     #  eg. 0.1 - 0.9 (we are making X smaller, which has less of an effect on the div to follow
     #     put another way.. the smaller the x factor the less effect it has on turning
-    x_factor = max(1, abs(x1 * 0.01) )
+    x_factor = max(1, abs(x1 * 0.02) )  # 0.01
     slower_wheel_speed = int(y1/x_factor)
 
     if x1 > 0:
@@ -366,15 +368,20 @@ def update_gamepad(data):
     if x1 < 0:
         left_speed = slower_wheel_speed
 
+    #bkd - speeding up left wheel if pushed hard :-)
+    if y1 < 150:
+        y1 = y1 * x_factor #* 10
 
     ## spin
-    if y1 == 0:
+    if abs(y1) < 0.1:
         right_speed =  -x1
         left_speed  = x1
 
     # if standing still,  turn off motors
     if (y1 == 0) and (x1 == 0):
         turnOffMotors()
+        #set_left_speed(0)
+        #set_right_speed(0)
     else:
         #move motors
         set_left_speed(left_speed)
@@ -426,4 +433,4 @@ def update_gyro(data):
 
 if __name__ == '__main__':
     app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
-    io.run(app, host='0.0.0.0')
+    io.run(app, host='0.0.0.0', port=80)
