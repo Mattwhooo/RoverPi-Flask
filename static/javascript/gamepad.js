@@ -90,14 +90,24 @@ function updateStatus() {
         if (new Date().getTime() - last > 250){
 
             if (controller.axes[4] != 0) {
-                var lastHorizontal = new Date().getTime();
                 socket.emit('horizontal offset', controller.axes[4])
             }
 
             if (controller.axes[5] != 0) {
-                var lastVertical = new Date().getTime();
                 socket.emit('vertical offset', controller.axes[5])
             }
+
+            if (controller.buttons[4].pressed || controller.buttons[5].pressed){
+                var a = $("<a>")
+                .attr("href", "image")
+                .attr("download", "img" + Date.now() + ".jpg")
+                .appendTo("body");
+
+                a[0].click();
+
+                a.remove();
+            }
+
             last = new Date().getTime();
         }
 
@@ -146,4 +156,21 @@ window.addEventListener("gamepaddisconnected", disconnecthandler);
 if (!haveEvents) {
     setInterval(scangamepads, 500);
 }
+
+document.fullscreenEnabled = document.fullscreenEnabled || document.mozFullScreenEnabled || document.documentElement.webkitRequestFullScreen;
+
+function requestFullscreen(element) {
+    if (element.requestFullscreen) {
+        element.requestFullscreen();
+    } else if (element.mozRequestFullScreen) {
+        element.mozRequestFullScreen();
+    } else if (element.webkitRequestFullScreen) {
+        element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+    }
+}
+$(document).ready(function(){
+
+})
+
+
 //showOverlay();

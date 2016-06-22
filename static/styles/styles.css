@@ -175,6 +175,13 @@ progress{
   color: #ECA400;
   cursor: pointer;
 }
+.hover-stuff i{
+  font-size: x-large;
+}
+.hover-stuff i:hover{
+  color: #ECA400;
+  cursor: pointer;
+}
 #video img{
   max-width: 100%;
   display:block;
