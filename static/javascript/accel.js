@@ -24,7 +24,7 @@ if (window.DeviceOrientationEvent) {
             // deviceOrientationHandler(g, b, a, c, accuracy);
             compassData = 'cGamma='+g+';cBeta='+b+';cAlpha='+a+';cHeading='+c+';cAccuracy='+accuracy;
             socket.emit('compassUpdate', accelData);
-            console.log("gamma:",g," beta:",b," alpha:",a," c:",c," a:",accuracy);
+//            console.log("gamma:",g," beta:",b," alpha:",a," c:",c," a:",accuracy);
         }, false);
 
     } else {
@@ -40,12 +40,12 @@ if (window.DeviceMotionEvent != undefined) {
 		x = e.accelerationIncludingGravity.x;
 		y = e.accelerationIncludingGravity.y;
 		z = e.accelerationIncludingGravity.z;
-        console.log('accelX:',e.accelerationIncludingGravity.x)
+//        console.log('accelX:',e.accelerationIncludingGravity.x)
 		if ( e.rotationRate ) {
 			rAlpha = e.rotationRate.alpha;
 			rBeta = e.rotationRate.beta;
 			rGamma = e.rotationRate.gamma;
-			console.log('RALPHA',rAlpha)
+//			console.log('RALPHA',rAlpha)
 			if (rAlpha == null) { rAlpha = 0 }
 			if (rBeta == null) { rBeta = 0 }
 			if (rGamma == null) { rGamma = 0 }
@@ -72,8 +72,8 @@ if (window.DeviceMotionEvent != undefined) {
 		y = parseInt(y + vy / 50);
 		x = parseInt(x + vx / 50);
 
-        console.log(y);
-        console.log(x);
+//        console.log(y);
+//        console.log(x);
 		
 		//sphere.style.top = y + "px";
 		//sphere.style.left = x + "px";

@@ -123,6 +123,12 @@ def scale_heading(cHeading):
 def hello_world():
     return render_template('index.jade', title = 'Rover-Pi')
 
+@app.route('/image/')
+def get_image():
+    if raspberry_pi:
+        #os.system('raspistill -o static/images/screenshot.jpg')
+        return app.send_static_file('images/screenshot.jpg')
+
 @io.on('broadcast user', namespace='/rover')
 def test_message(message):
     users[request.sid] = message
