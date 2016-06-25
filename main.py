@@ -259,7 +259,7 @@ def hello_world():
 @app.route('/image/')
 def get_image():
     if raspberry_pi:
-        #os.system('raspistill -o static/images/screenshot.jpg')
+        os.system('raspistill -o static/images/screenshot.jpg')
         return app.send_static_file('images/screenshot.jpg')
 
 @io.on('broadcast user', namespace='/rover')
