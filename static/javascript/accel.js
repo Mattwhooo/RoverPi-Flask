@@ -23,7 +23,7 @@ if (window.DeviceOrientationEvent) {
             var accuracy = e.compassAccuracy || e.webkitCompassAccuracy || 0;
             // deviceOrientationHandler(g, b, a, c, accuracy);
             compassData = 'cGamma='+g+';cBeta='+b+';cAlpha='+a+';cHeading='+c+';cAccuracy='+accuracy;
-            socket.emit('compassUpdate', accelData);
+//            socket.emit('compassUpdate', accelData);
 //            console.log("gamma:",g," beta:",b," alpha:",a," c:",c," a:",accuracy);
         }, false);
 

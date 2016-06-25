@@ -38,10 +38,17 @@ function loadVideo(){
   img.setAttribute('style', 'height:100%;margin-left:auto;margin-right:auto');
   $('.welcome-message').fadeOut();
   $('#video').replaceWith(img);
+  $('#full-screen-video').show()
 }
 $(document).ready(function(){
   $('#load_video').click(loadVideo);
   $('#show_controller').click(showInput);
+  $('#full-screen-video').click(function(){
+    if (document.fullscreenEnabled) {
+      element = $('.img-responsive')[0]
+      requestFullscreen(element);
+    }
+  });
 });
 
 
